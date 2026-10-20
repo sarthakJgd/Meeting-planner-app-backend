@@ -18,15 +18,13 @@ let PasswordResetMail = (req, res) => {
     let findUser = () => {
         return new Promise((resolve, reject) => {
             if (req.body.emailId) {
-                console.log("req body email is there");
-                console.log(req.body);
                 UserModel.findOne({
                     emailId: req.body.emailId
                 },
                     (err, userDetails) => {
                         /* handle the error here if the User is not found */
                         if (err) {
-                            console.log(err);
+                            logger.error('Operation failed', 'ApplicationOperation', 10)
                             logger.error(
                                 "Failed To Retrieve User Data",
                                 "userController: sendmail.findUser()",
@@ -80,11 +78,10 @@ let PasswordResetMail = (req, res) => {
         delete userDetailsobj._id;
         delete userDetailsobj.__v;
         delete userDetailsobj.createdOn;
-        console.log("generate token");
         return new Promise((resolve, reject) => {
             token.generateToken(userDetails, (err, tokenDetails) => {
                 if (err) {
-                    console.log(err);
+                    logger.error('Operation failed', 'ApplicationOperation', 10)
                     let apiResponse = response.generate(
                         true,
                         "Failed To Generate Token",
@@ -101,14 +98,13 @@ let PasswordResetMail = (req, res) => {
         });
     };
     let saveToken = tokenDetails => {
-        console.log("save token");
         return new Promise((resolve, reject) => {
             AuthModel.findOne({
                 userId: tokenDetails.userId
             },
                 (err, retrievedTokenDetails) => {
                     if (err) {
-                        console.log(err.message, "userController: saveToken", 10);
+                        logger.error('Operation failed', 'ApplicationOperation', 10)
                         let apiResponse = response.generate(
                             true,
                             "Failed To Generate Token",
@@ -120,12 +116,11 @@ let PasswordResetMail = (req, res) => {
                         let newAuthToken = new AuthModel({
                             userId: tokenDetails.userId,
                             authToken: tokenDetails.token,
-                            tokenSecret: tokenDetails.tokenSecret,
                             tokenGenerationTime: time.now()
                         });
                         newAuthToken.save((err, newTokenDetails) => {
                             if (err) {
-                                console.log(err);
+                                logger.error('Operation failed', 'ApplicationOperation', 10)
                                 logger.error(err.message, "userController: saveToken", 10);
                                 let apiResponse = response.generate(
                                     true,
@@ -144,11 +139,10 @@ let PasswordResetMail = (req, res) => {
                         });
                     } else {
                         retrievedTokenDetails.authToken = tokenDetails.token;
-                        retrievedTokenDetails.tokenSecret = tokenDetails.tokenSecret;
                         retrievedTokenDetails.tokenGenerationTime = time.now();
                         retrievedTokenDetails.save((err, newTokenDetails) => {
                             if (err) {
-                                console.log(err);
+                                logger.error('Operation failed', 'ApplicationOperation', 10)
                                 logger.error(err.message, "userController: saveToken", 10);
                                 let apiResponse = response.generate(
                                     true,
@@ -186,16 +180,14 @@ let PasswordResetMail = (req, res) => {
 
             var transporter = nodemailer.createTransport({
                 service: "gmail",
-                /* temporary email */
                 auth: {
-                    user: "vivekedwisor@gmail.com",
-                    pass: "edvivekxyz"
-                },
-                tls: { rejectUnauthorized: false }
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS
+                }
             });
 
             var mailOptions = {
-                from: '"Meeting Planner Admin" <vivekedwisor@gmail.com>',
+                from: `"Meeting Planner Admin" <${process.env.SMTP_USER}>`,
                 to: req.body.emailId,
                 template: "forgot-password-email",
                 subject: "Password Reset Link",
@@ -214,7 +206,7 @@ let PasswordResetMail = (req, res) => {
 
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
-                    console.log(err);
+                    logger.error('Operation failed', 'ApplicationOperation', 10)
                     logger.error(
                         "Sent Mail Failed!",
                         "User Controller: sendResetMail()",
@@ -228,7 +220,6 @@ let PasswordResetMail = (req, res) => {
                     );
                     reject(apiResponse);
                 } else {
-                    console.log(info);
                     resolve(data);
                 }
             });
@@ -241,7 +232,7 @@ let PasswordResetMail = (req, res) => {
                 userId: userDetails.userId
             }, (err, result) => {
                 if (err) {
-                    console.log(err)
+                    logger.error('Operation failed', 'ApplicationOperation', 10)
                     logger.error(err.message, 'user Controller: resetPassword', 10)
                     let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
                     reject(apiResponse);
@@ -267,7 +258,7 @@ let PasswordResetMail = (req, res) => {
             res.send(resolve);
         })
         .catch(err => {
-            console.log(err);
+            logger.error('Operation failed', 'ApplicationOperation', 10)
             res.send(err);
         });
 }; //end of sendmail function
@@ -277,15 +268,13 @@ let loginFunction = (req, res) => {
     let findUser = () => {
         return new Promise((resolve, reject) => {
             if (req.body.emailId) {
-                console.log("req body email is there");
-                console.log(req.body);
                 UserModel.findOne({
                     emailId: req.body.emailId
                 },
                     (err, userDetails) => {
                         /* handle the error here if the User is not found */
                         if (err) {
-                            console.log(err);
+                            logger.error('Operation failed', 'ApplicationOperation', 10)
                             logger.error(
                                 "Failed To Retrieve User Data",
                                 "userController: findUser()",
@@ -329,14 +318,13 @@ let loginFunction = (req, res) => {
         });
     };
     let validatePassword = retrievedUserDetails => {
-        console.log("validatePassword");
         return new Promise((resolve, reject) => {
             passwordLib.comparePassword(
                 req.body.userPassword,
                 retrievedUserDetails.userPassword,
                 (err, isMatch) => {
                     if (err) {
-                        console.log(err);
+                        logger.error('Operation failed', 'ApplicationOperation', 10)
                         logger.error(err.message, "userController: validatePassword()", 10);
                         let apiResponse = response.generate(
                             true,
@@ -372,11 +360,10 @@ let loginFunction = (req, res) => {
     };
 
     let generateToken = userDetails => {
-        console.log("generate token");
         return new Promise((resolve, reject) => {
             token.generateToken(userDetails, (err, tokenDetails) => {
                 if (err) {
-                    console.log(err);
+                    logger.error('Operation failed', 'ApplicationOperation', 10)
                     let apiResponse = response.generate(
                         true,
                         "Failed To Generate Token",
@@ -387,21 +374,19 @@ let loginFunction = (req, res) => {
                 } else {
                     tokenDetails.userId = userDetails.userId;
                     tokenDetails.userDetails = userDetails;
-                    console.log("this is token details" + tokenDetails + "  " + userDetails)
                     resolve(tokenDetails);
                 }
             });
         });
     };
     let saveToken = tokenDetails => {
-        console.log("save token");
         return new Promise((resolve, reject) => {
             AuthModel.findOne({
                 userId: tokenDetails.userId
             },
                 (err, retrievedTokenDetails) => {
                     if (err) {
-                        console.log(err.message, "userController: saveToken", 10);
+                        logger.error('Operation failed', 'ApplicationOperation', 10)
                         let apiResponse = response.generate(
                             true,
                             "Failed To Generate Token",
@@ -413,12 +398,11 @@ let loginFunction = (req, res) => {
                         let newAuthToken = new AuthModel({
                             userId: tokenDetails.userId,
                             authToken: tokenDetails.token,
-                            tokenSecret: tokenDetails.tokenSecret,
                             tokenGenerationTime: time.now()
                         });
                         newAuthToken.save((err, newTokenDetails) => {
                             if (err) {
-                                console.log(err);
+                                logger.error('Operation failed', 'ApplicationOperation', 10)
                                 logger.error(err.message, "userController: saveToken", 10);
                                 let apiResponse = response.generate(
                                     true,
@@ -437,11 +421,10 @@ let loginFunction = (req, res) => {
                         });
                     } else {
                         retrievedTokenDetails.authToken = tokenDetails.token;
-                        retrievedTokenDetails.tokenSecret = tokenDetails.tokenSecret;
                         retrievedTokenDetails.tokenGenerationTime = time.now();
                         retrievedTokenDetails.save((err, newTokenDetails) => {
                             if (err) {
-                                console.log(err);
+                                logger.error('Operation failed', 'ApplicationOperation', 10)
                                 logger.error(err.message, "userController: saveToken", 10);
                                 let apiResponse = response.generate(
                                     true,
@@ -479,8 +462,8 @@ let loginFunction = (req, res) => {
             res.send(apiResponse);
         })
         .catch(err => {
-            console.log("errorhandler");
-            console.log(err);
+            logger.error('Operation failed', 'ApplicationOperation', 10)
+            logger.error('Operation failed', 'ApplicationOperation', 10)
             res.status(err.status);
             res.send(err);
         });
@@ -541,7 +524,6 @@ let signUpFunction = (req, res) => {
                     );
                     reject(apiResponse);
                 } else if (check.isEmpty(retrievedUserDetails)) {
-                    console.log(req.body);
                     let newUser = new UserModel({
                         userId: shortid.generate(),
                         firstName: req.body.firstName,
@@ -551,14 +533,9 @@ let signUpFunction = (req, res) => {
                         userPassword: passwordLib.hashpassword(req.body.userPassword),
                         createdOn: time.now()
                     });
-                    if (newUser.firstName.substr(-6) === "-admin") {
-                        console.log(newUser.firstName);
-                        newUser.isAdmin = true;
-                    }
-
                     newUser.save((err, newUser) => {
                         if (err) {
-                            console.log(err);
+                            logger.error('Operation failed', 'ApplicationOperation', 10)
                             logger.error(err.message, "userController: createUser", 10);
                             let apiResponse = response.generate(
                                 true,
@@ -606,7 +583,7 @@ let signUpFunction = (req, res) => {
             res.send(apiResponse);
         })
         .catch(err => {
-            console.log(err);
+            logger.error('Operation failed', 'ApplicationOperation', 10)
             res.send(err);
         });
 }; // end user signup function
@@ -615,15 +592,13 @@ let resetPassword = (req, res) => {
     let findUser = () => {
         return new Promise((resolve, reject) => {
             if (req.body.userId) {
-                console.log("req body userId is there");
-                console.log(req.body);
                 UserModel.findOne({
                     userId: req.body.userId
                 },
                     (err, userDetails) => {
                         /* handle the error here if the User is not found */
                         if (err) {
-                            console.log(err);
+                            logger.error('Operation failed', 'ApplicationOperation', 10)
                             logger.error(
                                 "Failed To Retrieve User Data",
                                 "resetPassword: findUser()",
@@ -669,7 +644,6 @@ let resetPassword = (req, res) => {
 
 
     let updatePassword = () => {
-        console.log("updatePassword");
         return new Promise((resolve, reject) => {
             let userId = req.body.userId;
             UserModel.update({
@@ -680,7 +654,7 @@ let resetPassword = (req, res) => {
                     }
                 }).exec((err, result) => {
                     if (err) {
-                        console.log(err);
+                        logger.error('Operation failed', 'ApplicationOperation', 10)
                         logger.error(err.message, "User Controller:editUser", 10);
                         let apiResponse = response.generate(
                             true,
@@ -710,12 +684,11 @@ let resetPassword = (req, res) => {
                 resolve
             );
             res.status(200);
-            console.log(apiResponse);
             res.send(apiResponse);
         })
         .catch(err => {
-            console.log("errorhandler");
-            console.log(err);
+            logger.error('Operation failed', 'ApplicationOperation', 10)
+            logger.error('Operation failed', 'ApplicationOperation', 10)
             res.status(err.status);
             res.send(err);
         });
@@ -729,7 +702,7 @@ let getAllUsers = (req, res) => {
     }).exec((err, userDetails) => {
         /* handle the error here if the User is not found */
         if (err) {
-            console.log(err);
+            logger.error('Operation failed', 'ApplicationOperation', 10)
             logger.error("Failed To Retrieve User Data", "getAllUsers()", 10);
             /* generate the error message and the api response message here */
             let apiResponse = response.generate(
@@ -763,7 +736,7 @@ let logout = (req, res) => {
         userId: req.user.userId
     }, (err, result) => {
         if (err) {
-            console.log(err)
+            logger.error('Operation failed', 'ApplicationOperation', 10)
             logger.error(err.message, 'user Controller: logout', 10)
             let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
             res.send(apiResponse)

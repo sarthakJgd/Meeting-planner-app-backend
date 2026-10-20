@@ -22,7 +22,7 @@
       "examples": [
         {
           "title": "Success-Response:",
-          "content": " [{\n        \"_id\": \"5cbce6a09314223c381d789d\",\n        \"__v\": 0,\n        \"isAdmin\": false,\n        \"createdOn\": \"2019-04-21T21:54:40.000Z\",\n        \"mobileNumber\": \"(870)-46454834\",\n        \"emailId\": \"adi.sharma@gmail.com\",\n        \"userPassword\": \"$2a$10$X9XUS2U5AjKZiy7YwlbTXuHk2/wJ5eFL9oX7r6VwHSTi5X6tOFs2K\",\n        \"lastName\": \"sharma\",\n        \"firstName\": \"adi\",\n        \"userId\": \"QUzVGFNrh\"\n      }]\n\t\t}\n\t}",
+          "content": " [{\n        \"_id\": \"5cbce6a09314223c381d789d\",\n        \"__v\": 0,\n        \"isAdmin\": false,\n        \"createdOn\": \"2019-04-21T21:54:40.000Z\",\n        \"mobileNumber\": \"(870)-46454834\",\n        \"emailId\": \"example@example.invalid\",\n        \"userPassword\": \"$2a$10$X9XUS2U5AjKZiy7YwlbTXuHk2/wJ5eFL9oX7r6VwHSTi5X6tOFs2K\",\n        \"lastName\": \"sharma\",\n        \"firstName\": \"adi\",\n        \"userId\": \"QUzVGFNrh\"\n      }]\n\t\t}\n\t}",
           "type": "json"
         }
       ]
@@ -370,7 +370,7 @@
       "examples": [
         {
           "title": "Success-Response:",
-          "content": " {\n    \"error\": false,\n    \"message\": \"Login Successful\",\n    \"status\": 200,\n    \"data\": {\n        \"authToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RpZCI6IkQ5ZG9PanFNciIsImlhdCI6MTU1NjExNDk0MDM2NiwiZXhwIjoxNTU2MjAxMzQwLCJzdWIiOiJhdXRoVG9rZW4iLCJpc3MiOiJlZENoYXQiLCJkYXRhIjp7ImlzQWRtaW4iOmZNlLCJtb2JpbGVOdW1iZXIiOiI0MzU0MzU0NTM0MyIsImVtYWlsSWQiOiJtaW5pY2FAZ21haWwuY29tIiwibGFzdE5hbWUiOiJtaXNocmEiLCJmaXJzdE5hbWUiOiJtb25pY2EiLCJ1c2VySWQiOiJkWW1XTU5tclMifX0.TihL6E4pbguqfCZ3f8mT0WYkOuUhd9scMDfkKkN376M\",\n        \"userDetails\": {\n            \"isAdmin\": false,\n            \"mobileNumber\": \"43543545343\",\n            \"emailId\": \"asdasd@gmail.com\",\n            \"lastName\": \"asdasd\",\n            \"firstName\": \"asddsaf\",\n            \"userId\": \"dYmWMNmrS\"\n        }\n    }\n}\n}\n\t\t}\n\t}",
+          "content": " {\n    \"error\": false,\n    \"message\": \"Login Successful\",\n    \"status\": 200,\n    \"data\": {\n        \"authToken\": \"[redacted-token-example]\",\n        \"userDetails\": {\n            \"isAdmin\": false,\n            \"mobileNumber\": \"43543545343\",\n            \"emailId\": \"example@example.invalid\",\n            \"lastName\": \"asdasd\",\n            \"firstName\": \"asddsaf\",\n            \"userId\": \"dYmWMNmrS\"\n        }\n    }\n}\n}\n\t\t}\n\t}",
           "type": "json"
         }
       ]
@@ -569,7 +569,7 @@
       "examples": [
         {
           "title": "Success-Response:",
-          "content": " {\n    \"error\": false,\n    \"message\": \"User created\",\n    \"status\": 200,\n    \"data\": {\n        \"__v\": 0,\n        \"_id\": \"5cc06d9514f66619786b86c8\",\n        \"isAdmin\": false,\n        \"createdOn\": \"2019-04-24T14:07:17.000Z\",\n        \"mobileNumber\": \"43543545343\",\n        \"emailId\": \"assddw@gmail.com\",\n        \"lastName\": \"sadasd\",\n        \"firstName\": \"asasd\",\n        \"userId\": \"dYmWMNmrS\"\n    }\n}\n\t\t}\n\t}",
+          "content": " {\n    \"error\": false,\n    \"message\": \"User created\",\n    \"status\": 200,\n    \"data\": {\n        \"__v\": 0,\n        \"_id\": \"5cc06d9514f66619786b86c8\",\n        \"isAdmin\": false,\n        \"createdOn\": \"2019-04-24T14:07:17.000Z\",\n        \"mobileNumber\": \"43543545343\",\n        \"emailId\": \"example@example.invalid\",\n        \"lastName\": \"sadasd\",\n        \"firstName\": \"asasd\",\n        \"userId\": \"dYmWMNmrS\"\n    }\n}\n\t\t}\n\t}",
           "type": "json"
         }
       ]

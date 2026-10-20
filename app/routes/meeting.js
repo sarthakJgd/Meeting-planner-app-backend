@@ -29,7 +29,7 @@ module.exports.setRouter = (app) => {
         "isAdmin": false,
         "createdOn": "2019-04-21T21:54:40.000Z",
         "mobileNumber": "(870)-46454834",
-        "emailId": "adi.sharma@gmail.com",
+        "emailId": "example@example.invalid",
         "userPassword": "$2a$10$X9XUS2U5AjKZiy7YwlbTXuHk2/wJ5eFL9oX7r6VwHSTi5X6tOFs2K",
         "lastName": "sharma",
         "firstName": "adi",

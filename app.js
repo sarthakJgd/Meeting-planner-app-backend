@@ -10,10 +10,8 @@ const logger = require("./app/libs/loggerLib");
 const routeLoggerMiddleware = require("./app/middlewares/routeLogger.js");
 const globalErrorMiddleware = require("./app/middlewares/appErrorHandler");
 const mongoose = require("mongoose");
-const morgan = require("morgan");
 
 /* middlewares */
-app.use(morgan("dev"));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -63,7 +61,7 @@ app.use(globalErrorMiddleware.globalNotFoundHandler);
 
 const server = http.createServer(app);
 // start listening to http server
-console.log(appConfig);
+logger.info({ port: appConfig.port, environment: appConfig.environment }, 'server startup', 10);
 server.listen(appConfig.port);
 server.on('error', onError);
 server.on('listening', onListening);
@@ -122,29 +120,22 @@ function onListening() {
   let db = mongoose.connect(appConfig.db.uri,{ useNewUrlParser: true });
 }
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
-  // application specific logging, throwing an error, or other logic here
+process.on('unhandledRejection', () => {
+  logger.error('Unhandled promise rejection', 'Process', 10);
 });
 
 /**
  * database connection settings
  */
 mongoose.connection.on('error', function (err) {
-  console.log('database connection error');
-  console.log(err)
-  logger.error(err,
-    'mongoose connection on error handler', 10)
+  logger.error('Database connection failed', 'Database', 10)
   //process.exit(1)
 }); // end mongoose connection error
 
 mongoose.connection.on('open', function (err) {
   if (err) {
-    console.log("database error");
-    console.log(err);
-    logger.error(err, 'mongoose connection open handler', 10)
+    logger.error('Database connection failed', 'Database', 10)
   } else {
-    console.log("database connection open success");
     logger.info("database connection open",
       'database connection open handler', 10)
   }

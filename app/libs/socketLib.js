@@ -14,6 +14,8 @@ const schedule = require('node-schedule');
 const nodemailer = require("nodemailer");
 
 const EventModel = mongoose.model("Event");
+const AuthModel = mongoose.model("Auth");
+const UserModel = mongoose.model("User");
 
 const tokenLib = require("./tokenLib.js");
 const check = require("./checkLib.js");
@@ -29,53 +31,89 @@ let setServer = server => {
   let myIo = io.of("/");
 
   myIo.on("connection", socket => {
-    console.log("on connection--emitting verify user");
-
-    /* socket.emit("verifyUser", "");
-
-    // code to verify the user and make him online
 
     socket.on("set-user", authToken => {
-      console.log("set-user called");
+      if (socket.userId) {
+        socket.emit("auth-error", { error: "Socket is already authenticated" });
+        return;
+      }
+      if (typeof authToken !== "string" || !authToken) {
+        socket.emit("auth-error", { error: "Authentication required" });
+        socket.disconnect(true);
+        return;
+      }
       tokenLib.verifyClaimWithoutSecret(authToken, (err, user) => {
-        if (err) {
+        if (err || !user || !user.data || !user.data.userId) {
           socket.emit("auth-error", {
-            status: 500,
-            error: "Please provide correct auth token"
+            error: "Invalid authentication token"
           });
-        } else {
-          console.log("user is verified..setting details");
-          let currentUser = user.data;
-          // setting socket user id
-          socket.userId = currentUser.userId;
-          let fullName = `${currentUser.firstName} ${currentUser.lastName}`;
-          console.log(`${fullName} is online ${currentUser.userId}`);
-
-
-          let userObj = {
-            userId: currentUser.userId,
-            fullName: fullName
-          }
-          allOnlineUsers.push(userObj)
-          console.log(allOnlineUsers);
+          socket.disconnect(true);
+          return;
         }
+
+        AuthModel.findOne({ authToken, userId: user.data.userId }, (authError, authDetails) => {
+          if (authError || !authDetails) {
+            socket.emit("auth-error", { error: "Invalid authentication token" });
+            socket.disconnect(true);
+            return;
+          }
+          socket.userId = user.data.userId;
+          socket.join(socket.userId);
+          socket.emit("authenticated");
+        });
       });
-    }); // end of listening set-user event */
+    });
 
     socket.on("event-occured", (data) => {
-      console.log("****eventOccured for ***************" + data.actionPerformed);
-      setTimeout(function () {
-        if (data.eventStart !== null) {
-          eventEmitter.emit('sendAlertMail', data);
+      if (!socket.userId || !data || typeof data !== "object" || Array.isArray(data) || data.creatorId !== socket.userId ||
+          typeof data.createdForId !== "string" || data.createdForId.length > 100 ||
+          typeof data.eventTitle !== "string" || !data.eventTitle.trim() || data.eventTitle.length > 200 ||
+          !["created", "Updated", "deleted"].includes(data.actionPerformed)) {
+        socket.emit("auth-error", { error: "Not authorized to publish this event" });
+        return;
+      }
+
+      const eventStart = data.eventStart == null ? null : new Date(data.eventStart);
+      if (eventStart && !Number.isFinite(eventStart.getTime())) {
+        socket.emit("auth-error", { error: "Invalid event date" });
+        return;
+      }
+      const eventData = {
+        eventTitle: data.eventTitle.trim(),
+        creatorId: socket.userId,
+        createdForId: data.createdForId,
+        actionPerformed: data.actionPerformed,
+        eventStart: eventStart ? eventStart.toISOString() : null
+      };
+
+      UserModel.findOne({ userId: socket.userId }, (actorError, actor) => {
+        if (actorError || !actor || !actor.isAdmin) {
+          socket.emit("auth-error", { error: "Only administrators may publish meeting events" });
+          return;
+        }
+        UserModel.findOne({ userId: data.createdForId }, (userError, recipient) => {
+          if (userError || !recipient) {
+          return;
+          }
+          eventData.creatorName = actor.firstName;
+          eventData.creatorForEmail = recipient.emailId;
+          eventData.createdForName = recipient.firstName;
+
+          setTimeout(function () {
+        if (eventData.eventStart !== null) {
+          eventEmitter.emit('sendAlertMail', eventData);
         }
 
       }, 2000)
-      myIo.emit(data.createdForId, data);
-      let scheduleTime = moment(data.eventStart).subtract(1, 'm').toDate();
-      var j = schedule.scheduleJob(scheduleTime, function () {
-        console.log("sending remainder mail");
-        eventEmitter.emit('alert-user-for-upcomming-event', data);
-        myIo.emit('alert-user-for-upcomming-meeting', data);
+          myIo.to(eventData.createdForId).emit(eventData.createdForId, eventData);
+          if (eventStart && eventStart > new Date()) {
+            let scheduleTime = moment(eventStart).subtract(1, 'm').toDate();
+            schedule.scheduleJob(scheduleTime, function () {
+              eventEmitter.emit('alert-user-for-upcomming-event', eventData);
+              myIo.to(eventData.createdForId).emit('alert-user-for-upcomming-meeting', eventData);
+            });
+          }
+        });
       });
 
     }); // end of event occured 
@@ -84,15 +122,12 @@ let setServer = server => {
     // disconnect event
     socket.on('disconnect', () => {
       // disconnect the user from socket
-      console.log("user is disconnected");
       // console.log(socket.connectorName);
-      console.log(socket.userId);
 
       var removeIndex = allOnlineUsers.map(function (user) {
         return user.userId;
       }).indexOf(socket.userId);
       allOnlineUsers.splice(removeIndex, 1)
-      console.log(allOnlineUsers)
     }) // end of on disconnect
   });
 };
@@ -101,16 +136,14 @@ let setServer = server => {
 eventEmitter.on('alert-user-for-upcomming-event', (data) => {
   var transporter = nodemailer.createTransport({
     service: "gmail",
-    /* temporary email */
     auth: {
-      user: "vivekedwisor@gmail.com",
-      pass: "edvivekxyz"
-    },
-    tls: { rejectUnauthorized: false }
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
   });
 
   var mailOptions = {
-    from: '"Meeting Planner Admin" <vivekedwisor@gmail.com>',
+    from: `"Meeting Planner Admin" <${process.env.SMTP_USER}>`,
     to: data.creatorForEmail,
     subject: `Reminder : Meeting Scheduled in 1 minute`,
     text: `Dear ${data.createdForName},
@@ -124,10 +157,9 @@ Meeting Planner App Team`
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-      console.log(err);
-      console.log("an error occured while sending alert email")
+      logger.error('Operation failed', 'ApplicationOperation', 10)
+      logger.error('Operation failed', 'ApplicationOperation', 10)
     } else {
-      console.log(info);
     }
   });
 })
@@ -136,16 +168,14 @@ Meeting Planner App Team`
 eventEmitter.on('sendAlertMail', (data) => {
   var transporter = nodemailer.createTransport({
     service: "gmail",
-    /* temporary email */
     auth: {
-      user: "vivekedwisor@gmail.com",
-      pass: "edvivekxyz"
-    },
-    tls: { rejectUnauthorized: false }
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
   });
 
   var mailOptions = {
-    from: '"Meeting Planner Admin" <vivekedwisor@gmail.com>',
+    from: `"Meeting Planner Admin" <${process.env.SMTP_USER}>`,
     to: data.creatorForEmail,
     subject: `Event ${data.actionPerformed}`,
     text: `Dear ${data.createdForName},
@@ -160,10 +190,9 @@ Meeting Planner App Team`
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-      console.log(err);
-      console.log("an error occured while sending alert email")
+      logger.error('Operation failed', 'ApplicationOperation', 10)
+      logger.error('Operation failed', 'ApplicationOperation', 10)
     } else {
-      console.log(info);
     }
   });
 });

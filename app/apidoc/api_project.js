@@ -3,7 +3,6 @@ define({
   "version": "0.0.1",
   "description": "Documentation for the MeetingPlanner app",
   "title": "MeetingPlanner APIs",
-  "url": "http://api.edvivek.xyz",
   "sampleUrl": false,
   "defaultVersion": "0.0.0",
   "apidoc": "0.3.0",
