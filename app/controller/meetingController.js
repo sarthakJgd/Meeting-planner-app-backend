@@ -33,7 +33,7 @@ let getEvents = (req, res) => {
         .lean()
         .exec((err, result) => {
           if (err) {
-            console.log(err)
+            logger.error('Operation failed', 'ApplicationController', 10)
             logger.error(err.message, 'meeting Controller: findEvent', 10)
             let apiResponse = response.generate(true, `error occurred: ${err.message}`, 500, null)
             reject(apiResponse)
@@ -42,7 +42,6 @@ let getEvents = (req, res) => {
             let apiResponse = response.generate(true, 'No events Found', 404, null)
             reject(apiResponse)
           } else {
-            console.log('event found and listed.')
             resolve(result)
           }
         })
@@ -63,17 +62,14 @@ let getEvents = (req, res) => {
 
 let createEvent = (req, res) => {
   let findUser = () => {
-    console.log("findUser");
     return new Promise((resolve, reject) => {
       if (req.body.userId) {
-        console.log("req body userId is there");
-        console.log(req.body);
         UserModel.findOne({
           userId: req.body.userId
         }, (err, userDetails) => {
           /* handle the error here if the User is not found */
           if (err) {
-            console.log(err)
+            logger.error('Operation failed', 'ApplicationController', 10)
             logger.error('Failed To Retrieve User Data', 'meetingController: findUser()', 10)
             /* generate the error message and the api response message here */
             let apiResponse = response.generate(true, 'Failed To Find User Details', 500, null)
@@ -112,7 +108,7 @@ let createEvent = (req, res) => {
       });
       newEvent.save((err, newUser) => {
         if (err) {
-          console.log(err)
+          logger.error('Operation failed', 'ApplicationController', 10)
           logger.error(err.message, 'meetingController: saveEvent', 10)
           let apiResponse = response.generate(true, 'Failed to create new Event', 500, null)
           reject(apiResponse)
@@ -132,7 +128,7 @@ let createEvent = (req, res) => {
       res.send(apiResponse)
     })
     .catch((err) => {
-      console.log(err);
+      logger.error('Operation failed', 'ApplicationController', 10)
       res.send(err);
     })
 
@@ -140,8 +136,6 @@ let createEvent = (req, res) => {
 
 let editEvent = (req, res) => {
   let options = req.body;
-  console.log(req.params.id);
-  console.log(options)
   EventModel.update({
     'id': req.params.id
   }, {
@@ -150,7 +144,7 @@ let editEvent = (req, res) => {
     upsert: true
   }).exec((err, result) => {
     if (err) {
-      console.log(err)
+      logger.error('Operation failed', 'ApplicationController', 10)
       logger.error(err.message, 'User Controller:editUser', 10)
       let apiResponse = response.generate(true, 'Failed To edit user details', 500, null)
       res.send(apiResponse)
@@ -170,7 +164,7 @@ let deleteEvent = (req, res) => {
     'id': req.params.id
   }).exec((err, result) => {
     if (err) {
-      console.log(err)
+      logger.error('Operation failed', 'ApplicationController', 10)
       logger.error(err.message, 'Meeting Controller: deleteEvent', 10)
       let apiResponse = response.generate(true, 'Failed To delete Event', 500, null)
       res.send(apiResponse)

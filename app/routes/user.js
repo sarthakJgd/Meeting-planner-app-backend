@@ -36,7 +36,7 @@ module.exports.setRouter = app => {
         "isAdmin": false,
         "createdOn": "2019-04-24T14:07:17.000Z",
         "mobileNumber": "43543545343",
-        "emailId": "assddw@gmail.com",
+        "emailId": "example@example.invalid",
         "lastName": "sadasd",
         "firstName": "asasd",
         "userId": "dYmWMNmrS"
@@ -70,11 +70,11 @@ module.exports.setRouter = app => {
     "message": "Login Successful",
     "status": 200,
     "data": {
-        "authToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RpZCI6IkQ5ZG9PanFNciIsImlhdCI6MTU1NjExNDk0MDM2NiwiZXhwIjoxNTU2MjAxMzQwLCJzdWIiOiJhdXRoVG9rZW4iLCJpc3MiOiJlZENoYXQiLCJkYXRhIjp7ImlzQWRtaW4iOmZNlLCJtb2JpbGVOdW1iZXIiOiI0MzU0MzU0NTM0MyIsImVtYWlsSWQiOiJtaW5pY2FAZ21haWwuY29tIiwibGFzdE5hbWUiOiJtaXNocmEiLCJmaXJzdE5hbWUiOiJtb25pY2EiLCJ1c2VySWQiOiJkWW1XTU5tclMifX0.TihL6E4pbguqfCZ3f8mT0WYkOuUhd9scMDfkKkN376M",
+        "authToken": "[redacted-token-example]",
         "userDetails": {
             "isAdmin": false,
             "mobileNumber": "43543545343",
-            "emailId": "asdasd@gmail.com",
+            "emailId": "example@example.invalid",
             "lastName": "asdasd",
             "firstName": "asddsaf",
             "userId": "dYmWMNmrS"
